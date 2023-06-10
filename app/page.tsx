@@ -9,11 +9,20 @@ import { ProductFilters } from "@/components/product-filters"
 import { ProductGrid } from "@/components/product-grid"
 import { ProductSort } from "@/components/product-sort"
 
-interface Props {}
+interface Props {
+  searchParams: {
+    date?: string
+    price?: string
+  }
+}
 
-export default async function Page() {
+export default async function Page({ searchParams }: Props) {
+  const { price, date = "desc" } = searchParams
+  const priceOrder = price ? `| order(price ${price})` : ""
+  const dateOrder = date ? `| order(_createdAt ${date})` : ""
+  const order = `${priceOrder}${dateOrder}`
   const products = await client.fetch<SanityProduct[]>(
-    groq`*[_type == "product"] {
+    groq`*[_type == "product"] ${order} {
       _id,
       _createdAt,
       name,
@@ -43,6 +52,7 @@ export default async function Page() {
               {products.length} result{products.length == 1 ? "" : "s"}
             </h1>
             {/* Product Sort */}
+            <ProductSort />
           </div>
 
           <section aria-labelledby="products-heading" className="pb-24 pt-6">
